@@ -59,6 +59,15 @@ class flickrDataset(Dataset):
         df = pd.read_csv(txtFile)
         return df
     
-
+def myCollate():
+    def __init__(self,pad_idx):
+        self.pad_index = pad_index
+    def __call__(self,batch):
+        img1 = [item[0] for item in batch]
+        print(img1.shape)
+        img = [item[0].unsqueeze(0) for item in batch]
+        target = [item[1] for item in batch]
+        target = pad_sequence(target,padding_value=self.pad_idx)
+        return img,target
     
     
