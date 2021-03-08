@@ -62,12 +62,14 @@ for i in range(100):
         optimizer.step()
         if idx%100 ==0:
             print(f'{idx} done')
+            # break
     checkpoint = {
         "state_dict": model.state_dict(),
         "optimizer": optimizer.state_dict()
     }
     save_checkpoint(checkpoint)  
-    print(f'the loss for {i} epoch is {mean(overaLoss)}')
+    # print(torch.mean(overaLoss))
+    # print(f'the loss for {i} epoch is {mean(overaLoss.data())}')
 
     
 
