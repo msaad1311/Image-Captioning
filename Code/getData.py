@@ -32,6 +32,8 @@ class Vocabulary():
         words = nlp(text)
         return [self.stoi[w] if w in self.stoi else self.stoi['<UNK>']
                 for w in words]
+    def __len__(self):
+        return len(self.itos)
 
 class flickrDataset(Dataset):
     def __init__(self,imgFolder,captionFile,freqThreshold,transform):
@@ -49,7 +51,7 @@ class flickrDataset(Dataset):
         caption = self.captionFile[index]
         imageID = self.img[index]
         image = cv2.imread(os.path.join(self.imgFolder,imageID))
-        if transform is not None:
+        if self.transform is not None:
             image = self.transform(image)
         cap2num = [self.vocab.stoi['<SOS>']]
         cap2num+=self.vocab.str2numeric(caption)
@@ -77,7 +79,7 @@ if __name__ =='__main__':
     transform = transforms.Compose([
         transforms.ToPILImage(),
         transforms.Resize((224,224)),
-        ToTensor()
+        transforms.ToTensor()
     ])
     print('loading the data')
     dataset = flickrDataset('../Data/flickr8k/images',

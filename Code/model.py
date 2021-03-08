@@ -6,7 +6,7 @@ import torch.nn as nn
 class Encoder(nn.Module):
     def __init__(self,embed_size):
         super(Encoder,self).__init__()
-        self.inceptionNet = models.inception_v3(pretrained=True)
+        self.inceptionNet = models.inception_v3(pretrained=True, aux_logits=False)
         self.inceptionNet.fc = nn.Linear(self.inceptionNet.fc.in_features,embed_size)
         self.dropout = nn.Dropout(0.5)
         self.relu = nn.ReLU()
@@ -33,7 +33,14 @@ class Decoder(nn.Module):
         return output
     
 class E2D(nn.Module):
-    def __init__(self):
+    def __init__(self,vocab,embed_size,hidden_size,num_layers):
         super(E2D,self).__init__()
+        self.encoder = Encoder(embed_size)
+        self.decoder = Decoder(vocab,embed_size,hidden_size,num_layers)
+        
+    def forward(self,img,captions):
+        encoderOutput = self.encoder(img)
+        decoderOutput = self.decoder(encoderOutput,captions)
+        return decoderOutput
         
         
