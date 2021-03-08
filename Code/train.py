@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 import getData
 import model
 from torch.utils.data import DataLoader
+from statistics import mean
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
@@ -44,7 +45,10 @@ for name,params in model.encoder.inceptionNet.named_parameters():
         
 model.train()
 
+print(len(loader))
+
 for i in range(100):
+    overaLoss = []
     for idx,(img,caption) in enumerate(loader):
         img = img.to(device)
         caption = caption.to(device)
@@ -57,11 +61,13 @@ for i in range(100):
         loss = criterion(
             output.reshape(-1,output.shape[2]),caption.reshape(-1)
         )
+        overaLoss.append(loss)
         optimizer.zero_grad()
         loss.backward(loss)
         optimizer.step()
+        print(f'{idx} done')
         
-        print(f'the loss for {idx} epoch is {loss}')
+    print(f'the loss for {i} epoch is {mean(loss)}')
 
     
 
