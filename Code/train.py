@@ -52,11 +52,6 @@ for i in range(100):
     for idx,(img,caption) in enumerate(loader):
         img = img.to(device)
         caption = caption.to(device)
-        checkpoint = {
-                "state_dict": model.state_dict(),
-                "optimizer": optimizer.state_dict()
-            }
-        save_checkpoint(checkpoint)
         output = model(img,caption[:-1])
         loss = criterion(
             output.reshape(-1,output.shape[2]),caption.reshape(-1)
@@ -65,9 +60,14 @@ for i in range(100):
         optimizer.zero_grad()
         loss.backward(loss)
         optimizer.step()
-        print(f'{idx} done')
-        
-    print(f'the loss for {i} epoch is {mean(loss)}')
+        if idx%100 ==0:
+            print(f'{idx} done')
+    checkpoint = {
+        "state_dict": model.state_dict(),
+        "optimizer": optimizer.state_dict()
+    }
+    save_checkpoint(checkpoint)  
+    print(f'the loss for {i} epoch is {mean(overaLoss)}')
 
     
 
