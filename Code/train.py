@@ -5,7 +5,7 @@ import torchvision.transforms as transforms
 import getData
 import model
 from torch.utils.data import DataLoader
-from statistics import mean
+import inference
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
@@ -49,6 +49,7 @@ print(len(loader))
 
 for i in range(100):
     overaLoss = []
+    inference.print_examples(model,device,dataset)
     for idx,(img,caption) in enumerate(loader):
         img = img.to(device)
         caption = caption.to(device)
