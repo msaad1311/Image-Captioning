@@ -3,7 +3,44 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 import model
 import getData
-from torch.utils.data import DataLoader
+import cv2
+
+def print_examples(model, device, dataset,transform):
+    model.eval()
+    test_img1 = transform(cv2.imread("../Data/flickr8k/test_examples/dog.jpg"))
+    print("Example 1 CORRECT: Dog on a beach by the ocean")
+    print(
+        "Example 1 OUTPUT: "
+        + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
+    )
+    test_img2 = transform(
+        cv2.imread("../Data/flickr8k/test_examples/child.jpg"))
+    print("Example 2 CORRECT: Child holding red frisbee outdoors")
+    print(
+        "Example 2 OUTPUT: "
+        + " ".join(model.caption_image(test_img2.to(device), dataset.vocab))
+    )
+    test_img3 = transform(cv2.imread("../Data/flickr8k/test_examples/bus.png"))
+    print("Example 3 CORRECT: Bus driving by parked cars")
+    print(
+        "Example 3 OUTPUT: "
+        + " ".join(model.caption_image(test_img3.to(device), dataset.vocab))
+    )
+    test_img4 = transform(
+        cv2.imread("../Data/flickr8k/test_examples/boat.png"))
+    print("Example 4 CORRECT: A small boat in the ocean")
+    print(
+        "Example 4 OUTPUT: "
+        + " ".join(model.caption_image(test_img4.to(device), dataset.vocab))
+    )
+    test_img5 = transform(
+        cv2.imread("../Data/flickr8k/test_examples/horse.png"))
+    print("Example 5 CORRECT: A cowboy riding a horse in the desert")
+    print(
+        "Example 5 OUTPUT: "
+        + " ".join(model.caption_image(test_img5.to(device), dataset.vocab))
+    )
+    model.train()
 
 transform = transforms.Compose(
     [transforms.ToPILImage(),
@@ -16,8 +53,6 @@ transform = transforms.Compose(
 dataset = getData.flickrDataset('../Data/flickr8k/images',
                                 '../Data/flickr8k/captions.txt',
                                 5,transform)
-pad_idx = dataset.vocab.stoi['<PAD>']
-loader = DataLoader(dataset,batch_size=32,shuffle=True,collate_fn=getData.myCollate(pad_idx=pad_idx))
 
 vocab = len(dataset.vocab)
 hidden_size = 256
@@ -31,3 +66,5 @@ optimizer = optim.Adam(model.parameters(),lr=3e-4)
 checkpoint = r'my_checkpoint.pth.tar'
 model.load_state_dict(torch.load(checkpoint)['state_dict'])
 optimizer.load_state_dict(torch.load(checkpoint)['optimizer'])
+
+print_examples(model,device,dataset,transform)
