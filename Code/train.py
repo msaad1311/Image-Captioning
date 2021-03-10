@@ -78,7 +78,7 @@ vocab = len(dataset.vocab)
 hidden_size = 256
 embed_size = 256
 num_layers = 1
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cpu'
 model = model.E2D(vocab,embed_size,hidden_size,num_layers)
 model = model.to(device)
 optimizer = optim.Adam(model.parameters(),lr=3e-4)
