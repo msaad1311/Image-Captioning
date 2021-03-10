@@ -27,19 +27,19 @@ def print_examples(model, device, dataset):
     )
 
     model.eval()
-    test_img1 = transform(cv2.imread("../Data/flickr8k/test_examples/dog.jpg")).unsqueeze(0)
-    print("Example 1 CORRECT: Dog on a beach by the ocean")
-    print(
-        "Example 1 OUTPUT: "
-        + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
-    )
-    # test_img2 = transform(
-    #     cv2.imread("../Data/flickr8k/test_examples/child.jpg")).unsqueeze(0)
-    # print("Example 2 CORRECT: Child holding red frisbee outdoors")
+    # test_img1 = transform(cv2.imread("../Data/flickr8k/test_examples/dog.jpg")).unsqueeze(0)
+    # print("Example 1 CORRECT: Dog on a beach by the ocean")
     # print(
-    #     "Example 2 OUTPUT: "
-    #     + " ".join(model.caption_image(test_img2.to(device), dataset.vocab))
+    #     "Example 1 OUTPUT: "
+    #     + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
     # )
+    test_img2 = transform(
+        cv2.imread("../Data/flickr8k/test_examples/child.jpg")).unsqueeze(0)
+    print("Example 2 CORRECT: Child holding red frisbee outdoors")
+    print(
+        "Example 2 OUTPUT: "
+        + " ".join(model.caption_image(test_img2.to(device), dataset.vocab))
+    )
     # test_img3 = transform(cv2.imread("../Data/flickr8k/test_examples/bus.png")).unsqueeze(0)
     # print("Example 3 CORRECT: Bus driving by parked cars")
     # print(
@@ -76,6 +76,7 @@ torch.backends.cudnn.benchmark = True
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+
 vocab = len(dataset.vocab)
 hidden_size = 256
 embed_size = 256
@@ -97,9 +98,10 @@ for name,params in model.encoder.inceptionNet.named_parameters():
         
 model.train()
 
-for epoch in range(2):
+for epoch in range(numEpochs):
     overaLoss = []
     for idx,(img,caption) in enumerate(loader):
+        torch.cuda.empty_cache()
         img = img.to(device)
         caption = caption.to(device)
         output = model(img,caption[:-1])
