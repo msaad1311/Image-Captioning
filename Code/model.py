@@ -12,10 +12,8 @@ class Encoder(nn.Module):
         self.relu = nn.ReLU()
         
     def forward(self,image):
-        x = self.inceptionNet(image)
-        x = self.relu(x)
-        x = self.dropout(x)
-        return x
+        features = self.inceptionNet(image)
+        return self.dropout(self.relu(features))
 
 class Decoder(nn.Module):
     def __init__(self,vocab,embed_size,hidden_size,num_layers):

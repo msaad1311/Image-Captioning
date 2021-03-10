@@ -1,6 +1,8 @@
+from numpy import mod
 import torch.optim as optim
 import torch
 import torch.nn as nn
+from torch.utils import data
 import torchvision.transforms as transforms
 import getData
 import model
@@ -31,33 +33,33 @@ def print_examples(model, device, dataset):
         "Example 1 OUTPUT: "
         + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
     )
-    test_img2 = transform(
-        cv2.imread("../Data/flickr8k/test_examples/child.jpg")).unsqueeze(0)
-    print("Example 2 CORRECT: Child holding red frisbee outdoors")
-    print(
-        "Example 2 OUTPUT: "
-        + " ".join(model.caption_image(test_img2.to(device), dataset.vocab))
-    )
-    test_img3 = transform(cv2.imread("../Data/flickr8k/test_examples/bus.png")).unsqueeze(0)
-    print("Example 3 CORRECT: Bus driving by parked cars")
-    print(
-        "Example 3 OUTPUT: "
-        + " ".join(model.caption_image(test_img3.to(device), dataset.vocab))
-    )
-    test_img4 = transform(
-        cv2.imread("../Data/flickr8k/test_examples/boat.png")).unsqueeze(0)
-    print("Example 4 CORRECT: A small boat in the ocean")
-    print(
-        "Example 4 OUTPUT: "
-        + " ".join(model.caption_image(test_img4.to(device), dataset.vocab))
-    )
-    test_img5 = transform(
-        cv2.imread("../Data/flickr8k/test_examples/horse.png")).unsqueeze(0)
-    print("Example 5 CORRECT: A cowboy riding a horse in the desert")
-    print(
-        "Example 5 OUTPUT: "
-        + " ".join(model.caption_image(test_img5.to(device), dataset.vocab))
-    )
+    # test_img2 = transform(
+    #     cv2.imread("../Data/flickr8k/test_examples/child.jpg")).unsqueeze(0)
+    # print("Example 2 CORRECT: Child holding red frisbee outdoors")
+    # print(
+    #     "Example 2 OUTPUT: "
+    #     + " ".join(model.caption_image(test_img2.to(device), dataset.vocab))
+    # )
+    # test_img3 = transform(cv2.imread("../Data/flickr8k/test_examples/bus.png")).unsqueeze(0)
+    # print("Example 3 CORRECT: Bus driving by parked cars")
+    # print(
+    #     "Example 3 OUTPUT: "
+    #     + " ".join(model.caption_image(test_img3.to(device), dataset.vocab))
+    # )
+    # test_img4 = transform(
+    #     cv2.imread("../Data/flickr8k/test_examples/boat.png")).unsqueeze(0)
+    # print("Example 4 CORRECT: A small boat in the ocean")
+    # print(
+    #     "Example 4 OUTPUT: "
+    #     + " ".join(model.caption_image(test_img4.to(device), dataset.vocab))
+    # )
+    # test_img5 = transform(
+    #     cv2.imread("../Data/flickr8k/test_examples/horse.png")).unsqueeze(0)
+    # print("Example 5 CORRECT: A cowboy riding a horse in the desert")
+    # print(
+    #     "Example 5 OUTPUT: "
+    #     + " ".join(model.caption_image(test_img5.to(device), dataset.vocab))
+    # )
     model.train()
 
 transform = transforms.Compose(
@@ -95,7 +97,7 @@ for name,params in model.encoder.inceptionNet.named_parameters():
         
 model.train()
 
-for epoch in range(numEpochs):
+for epoch in range(2):
     overaLoss = []
     for idx,(img,caption) in enumerate(loader):
         img = img.to(device)
@@ -105,28 +107,19 @@ for epoch in range(numEpochs):
             output.reshape(-1,output.shape[2]),
             caption.reshape(-1)
             )
-        # print(loss)
+        overaLoss.append(loss.item())
         optimizer.zero_grad()
         loss.backward(loss)
         optimizer.step()
         if idx%100 ==0:
-            print(f'{idx} done')
-            break
-    # checkpoint = {
-    #     "state_dict": model.state_dict(),
-    #     "optimizer": optimizer.state_dict()
-    # }
-    # model.eval()
-    # test_img1 = transform(cv2.imread("../Data/flickr8k/test_examples/dog.jpg")).unsqueeze(0)
-    # print("Example 1 CORRECT: Dog on a beach by the ocean")
-    # print(
-    #     "Example 1 OUTPUT: "
-    #     + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
-    # )
-    # model.train()
-    # # save_checkpoint(checkpoint)  
-    # print(mean(overaLoss))
-    # # print(f'the loss for {i} epoch is {mean(overaLoss.data())}')
+            print(f'============================{idx} done==================')
+            print_examples(model,device,dataset)
+    checkpoint = {
+        "state_dict": model.state_dict(),
+        "optimizer": optimizer.state_dict()
+    }
+    save_checkpoint(checkpoint)  
+    print(f'the loss for {epoch} epoch is {mean(overaLoss)}')
 
     
 
