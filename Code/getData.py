@@ -15,7 +15,8 @@ class Vocabulary():
         self.itos = {0: "<PAD>", 1: "<SOS>", 2: "<EOS>", 3: "<UNK>"}
         self.stoi = {"<PAD>": 0, "<SOS>": 1, "<EOS>": 2, "<UNK>": 3}
     
-    def tokenize(self,text):
+    @staticmethod
+    def tokenize(text):
         return [tok.text.lower() for tok in nlp.tokenizer(text)]
     
     def buildVocab(self,sentenceList):
@@ -41,17 +42,16 @@ class Vocabulary():
 class flickrDataset(Dataset):
     def __init__(self,imgFolder,captionFile,freqThreshold,transform):
         self.imgFolder = imgFolder
-        self.dataframe = self.fileReader(captionFile)
-        self.captionFile = self.dataframe['caption']
+        self.dataframe = pd.read_csv(captionFile)
+        self.caption = self.dataframe['caption']
         self.img = self.dataframe['image']
         self.freqThreshold = freqThreshold
         self.transform = transform
-        # print(self.captionFile)
         self.vocab = Vocabulary(self.freqThreshold)
-        self.vocab.buildVocab(self.captionFile.tolist())
+        self.vocab.buildVocab(self.caption.tolist())
         
     def __getitem__(self, index):
-        caption = self.captionFile[index]
+        caption = self.caption[index]
         imageID = self.img[index]
         image = cv2.imread(os.path.join(self.imgFolder,imageID))
         if self.transform is not None:
@@ -60,10 +60,7 @@ class flickrDataset(Dataset):
         cap2num+=self.vocab.str2numeric(caption)
         cap2num.append(self.vocab.stoi['<EOS>'])
         return image,torch.tensor(cap2num)
-    
-    def fileReader(self,txtFile):
-        df = pd.read_csv(txtFile)
-        return df
+
     def __len__(self):
         return len(self.dataframe)
     
@@ -76,7 +73,13 @@ class myCollate():
         target = [item[1] for item in batch]
         target = pad_sequence(target,padding_value=self.pad_idx)
         return img,target
+
+def getLoader(rootFolder,captionFile,transform,batchSize=32,shuffle=True,pin_memory=True):
+    dataset = flickrDataset(rootFolder,captionFile,5,transform)
+    pad_idx = dataset.vocab.stoi['<PAD>']
+    loader = DataLoader(dataset,batchSize,shuffle,collate_fn=myCollate(pad_idx=pad_idx))
     
+    return loader,dataset
     
 if __name__ =='__main__':
     transform = transforms.Compose([
@@ -84,14 +87,11 @@ if __name__ =='__main__':
         transforms.Resize((224,224)),
         transforms.ToTensor()
     ])
-    print('loading the data')
-    dataset = flickrDataset('../Data/flickr8k/images',
-                            '../Data/flickr8k/captions.txt',
-                            5,transform)
-    print('going into the dataloader')
-    # pad_idx = dataset.vocab.stoi['<PAD>']
-    # loader = DataLoader(dataset,batch_size=32,shuffle=True,collate_fn=myCollate(pad_idx=pad_idx))
-    # print('completed the dataloader')
-    # for idx,(img,captions) in enumerate(loader):
-    #     print(img.shape)
-    #     print(captions.shape)
+    rootFolder = r'../Data/flickr8k/images/'
+    captionFile = r'../Data/flickr8k/captions.txt'
+    
+    loader,dataset = getLoader(rootFolder,captionFile,transform,32)
+    
+    for img,caption in loader:
+        print(img.shape)
+        print(caption.shape)

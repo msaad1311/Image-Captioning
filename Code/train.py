@@ -68,25 +68,25 @@ transform = transforms.Compose(
      transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5))]
 )
 
-dataset = getData.flickrDataset('../Data/flickr8k/images',
-                                '../Data/flickr8k/captions.txt',
-                                5,transform)
-pad_idx = dataset.vocab.stoi['<PAD>']
-loader = DataLoader(dataset,batch_size=32,shuffle=True,collate_fn=getData.myCollate(pad_idx=pad_idx))
+loader,dataset = getData.getLoader('../Data/flickr8k/images/','../Data/flickr8k/captions.txt',transform)
+
+torch.backends.cudnn.benchmark = True
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 vocab = len(dataset.vocab)
 hidden_size = 256
 embed_size = 256
 num_layers = 1
-device = 'cpu'
+learningRate = 3e-4
+numEpochs = 100
+
 model = model.E2D(vocab,embed_size,hidden_size,num_layers)
 model = model.to(device)
-optimizer = optim.Adam(model.parameters(),lr=3e-4)
-print(dataset.vocab.stoi['<PAD>'])
 criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.stoi['<PAD>'])
+optimizer = optim.Adam(model.parameters(),lr=learningRate)
 
 #fine tuning the encoder
-
 for name,params in model.encoder.inceptionNet.named_parameters():
     if 'fc.weights' in name or 'fc.bias' in name:
         params.requires_grad = True
@@ -95,41 +95,38 @@ for name,params in model.encoder.inceptionNet.named_parameters():
         
 model.train()
 
-for i in range(100):
+for epoch in range(numEpochs):
     overaLoss = []
-    
-    # print_examples(model,device,dataset)
     for idx,(img,caption) in enumerate(loader):
         img = img.to(device)
         caption = caption.to(device)
         output = model(img,caption[:-1])
-        print(output.shape)
-        print(caption.shape)
-        print(output.reshape(-1,output.shape[2]).shape)
-        print(caption.reshape(-1).shape)
-        loss = criterion(output.reshape(-1,output.shape[2]),caption.reshape(-1))
+        loss = criterion(
+            output.reshape(-1,output.shape[2]),
+            caption.reshape(-1)
+            )
         # print(loss)
         optimizer.zero_grad()
-        loss.backward()
+        loss.backward(loss)
         optimizer.step()
         if idx%100 ==0:
             print(f'{idx} done')
             break
-    checkpoint = {
-        "state_dict": model.state_dict(),
-        "optimizer": optimizer.state_dict()
-    }
-    model.eval()
-    test_img1 = transform(cv2.imread("../Data/flickr8k/test_examples/dog.jpg")).unsqueeze(0)
-    print("Example 1 CORRECT: Dog on a beach by the ocean")
-    print(
-        "Example 1 OUTPUT: "
-        + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
-    )
-    model.train()
-    # save_checkpoint(checkpoint)  
-    print(mean(overaLoss))
-    # print(f'the loss for {i} epoch is {mean(overaLoss.data())}')
+    # checkpoint = {
+    #     "state_dict": model.state_dict(),
+    #     "optimizer": optimizer.state_dict()
+    # }
+    # model.eval()
+    # test_img1 = transform(cv2.imread("../Data/flickr8k/test_examples/dog.jpg")).unsqueeze(0)
+    # print("Example 1 CORRECT: Dog on a beach by the ocean")
+    # print(
+    #     "Example 1 OUTPUT: "
+    #     + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
+    # )
+    # model.train()
+    # # save_checkpoint(checkpoint)  
+    # print(mean(overaLoss))
+    # # print(f'the loss for {i} epoch is {mean(overaLoss.data())}')
 
     
 

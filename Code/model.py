@@ -22,13 +22,13 @@ class Decoder(nn.Module):
         super(Decoder,self).__init__()
         self.embed = nn.Embedding(vocab,embed_size)
         self.dropout = nn.Dropout(0.5)
-        self.linear = nn.Linear(hidden_size,embed_size)
+        self.linear = nn.Linear(hidden_size,vocab)
         self.lstm = nn.LSTM(embed_size,hidden_size,num_layers)
     def forward(self,features,caption):
         embeddings = self.dropout(self.embed(caption))
         embeddings = torch.cat((features.unsqueeze(0),embeddings),dim=0)
-        output,_ = self.lstm(embeddings)
-        output = self.linear(output)
+        hiddens,_ = self.lstm(embeddings)
+        output = self.linear(hiddens)
         return output
     
 class E2D(nn.Module):
