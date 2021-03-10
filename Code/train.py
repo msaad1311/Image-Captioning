@@ -59,7 +59,6 @@ def print_examples(model, device, dataset):
         + " ".join(model.caption_image(test_img5.to(device), dataset.vocab))
     )
     model.train()
-    return
 
 transform = transforms.Compose(
     [transforms.ToPILImage(),
@@ -83,6 +82,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 model = model.E2D(vocab,embed_size,hidden_size,num_layers)
 model = model.to(device)
 optimizer = optim.Adam(model.parameters(),lr=3e-4)
+print(dataset.vocab.stoi['<PAD>'])
 criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.stoi['<PAD>'])
 
 #fine tuning the encoder
@@ -95,23 +95,22 @@ for name,params in model.encoder.inceptionNet.named_parameters():
         
 model.train()
 
-print(len(loader))
-
 for i in range(100):
     overaLoss = []
-    print('device:',device)
     
-    print_examples(model,device,dataset)
+    # print_examples(model,device,dataset)
     for idx,(img,caption) in enumerate(loader):
         img = img.to(device)
         caption = caption.to(device)
         output = model(img,caption[:-1])
-        loss = criterion(
-            output.reshape(-1,output.shape[2]),caption.reshape(-1)
-        )
-        overaLoss.append(loss.item())
+        print(output.shape)
+        print(caption.shape)
+        print(output.reshape(-1,output.shape[2]).shape)
+        print(caption.reshape(-1).shape)
+        loss = criterion(output.reshape(-1,output.shape[2]),caption.reshape(-1))
+        # print(loss)
         optimizer.zero_grad()
-        loss.backward(loss)
+        loss.backward()
         optimizer.step()
         if idx%100 ==0:
             print(f'{idx} done')
@@ -120,6 +119,14 @@ for i in range(100):
         "state_dict": model.state_dict(),
         "optimizer": optimizer.state_dict()
     }
+    model.eval()
+    test_img1 = transform(cv2.imread("../Data/flickr8k/test_examples/dog.jpg")).unsqueeze(0)
+    print("Example 1 CORRECT: Dog on a beach by the ocean")
+    print(
+        "Example 1 OUTPUT: "
+        + " ".join(model.caption_image(test_img1.to(device), dataset.vocab))
+    )
+    model.train()
     # save_checkpoint(checkpoint)  
     print(mean(overaLoss))
     # print(f'the loss for {i} epoch is {mean(overaLoss.data())}')
