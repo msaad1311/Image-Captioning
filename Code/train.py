@@ -73,7 +73,7 @@ dataset = getData.flickrDataset('../Data/flickr8k/images',
                                 '../Data/flickr8k/captions.txt',
                                 5,transform)
 pad_idx = dataset.vocab.stoi['<PAD>']
-
+loader = DataLoader(dataset,batch_size=32,shuffle=True,collate_fn=getData.myCollate(pad_idx=pad_idx))
 
 vocab = len(dataset.vocab)
 hidden_size = 256

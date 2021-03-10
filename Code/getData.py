@@ -28,11 +28,11 @@ class Vocabulary():
                 else:
                     frequencies[word]+=1
                 if frequencies[word]==self.freqThreshold:
-                    self.stoi[idx]=word
-                    self.itos[word]=idx
+                    self.itos[idx]=word
+                    self.stoi[word]=idx
                     idx+=1
     def str2numeric(self,text):
-        words = nlp(text)
+        words = self.tokenize(text)
         return [self.stoi[w] if w in self.stoi else self.stoi['<UNK>']
                 for w in words]
     def __len__(self):
