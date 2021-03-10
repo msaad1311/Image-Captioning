@@ -4,6 +4,7 @@ import torchvision.transforms as transforms
 import model
 import getData
 import cv2
+
 def print_examples(model, device, dataset):
     transform = transforms.Compose(
         [

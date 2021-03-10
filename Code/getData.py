@@ -19,14 +19,17 @@ class Vocabulary():
         frequencies = {}
         idx=4
         for sentence in sentenceList:
-            for word in nlp(sentence):
+            for word in nlp(sentence.lower()):
                 if word not in frequencies:
+                    print('if it is not in',frequencies)
                     frequencies[word]=1
                 else:
+                    print('if it is in',frequencies)
                     frequencies[word]+=1
                 if frequencies[word]==self.freqThreshold:
                     self.stoi[idx]=word
                     self.itos[word]=idx
+                    print(self.itos)
                     idx+=1
     def str2numeric(self,text):
         words = nlp(text)
