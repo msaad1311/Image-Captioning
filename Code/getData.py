@@ -15,21 +15,21 @@ class Vocabulary():
         self.itos = {0: "<PAD>", 1: "<SOS>", 2: "<EOS>", 3: "<UNK>"}
         self.stoi = {"<PAD>": 0, "<SOS>": 1, "<EOS>": 2, "<UNK>": 3}
     
+    def tokenize(self,text):
+        return [tok.text.lower() for tok in nlp.tokenizer(text)]
+    
     def buildVocab(self,sentenceList):
         frequencies = {}
         idx=4
         for sentence in sentenceList:
-            for word in nlp(sentence.lower()):
+            for word in self.tokenize(sentence):
                 if word not in frequencies:
-                    print('if it is not in',frequencies)
                     frequencies[word]=1
                 else:
-                    print('if it is in',frequencies)
                     frequencies[word]+=1
                 if frequencies[word]==self.freqThreshold:
                     self.stoi[idx]=word
                     self.itos[word]=idx
-                    print(self.itos)
                     idx+=1
     def str2numeric(self,text):
         words = nlp(text)
@@ -89,9 +89,9 @@ if __name__ =='__main__':
                             '../Data/flickr8k/captions.txt',
                             5,transform)
     print('going into the dataloader')
-    pad_idx = dataset.vocab.stoi['<PAD>']
-    loader = DataLoader(dataset,batch_size=32,shuffle=True,collate_fn=myCollate(pad_idx=pad_idx))
-    print('completed the dataloader')
-    for idx,(img,captions) in enumerate(loader):
-        print(img.shape)
-        print(captions.shape)
+    # pad_idx = dataset.vocab.stoi['<PAD>']
+    # loader = DataLoader(dataset,batch_size=32,shuffle=True,collate_fn=myCollate(pad_idx=pad_idx))
+    # print('completed the dataloader')
+    # for idx,(img,captions) in enumerate(loader):
+    #     print(img.shape)
+    #     print(captions.shape)
