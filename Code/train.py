@@ -79,7 +79,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 vocab = len(dataset.vocab)
 hidden_size = 256
-embed_size = 256
+embed_size = 512
 num_layers = 1
 learningRate = 3e-4
 numEpochs = 100
@@ -120,7 +120,7 @@ for epoch in range(numEpochs):
         "state_dict": model.state_dict(),
         "optimizer": optimizer.state_dict()
     }
-    save_checkpoint(checkpoint)  
+    save_checkpoint(checkpoint,'secondCheckpoint.pth.tar')  
     print(f'the loss for {epoch} epoch is {mean(overaLoss)}')
 
     
